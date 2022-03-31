@@ -1,0 +1,7 @@
+{
+    "image": "terraform:1",
+    "mounts": [
+        "source=/home/alex/.ssh,target=/home/alex/.ssh,type=bind,consistency=cached"
+    ],
+    "containerUser": "alex"
+}

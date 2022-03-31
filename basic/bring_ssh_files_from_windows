@@ -1,0 +1,4 @@
+#!/usr/bin/env zsh
+mkdir ~/.ssh
+cp /mnt/c/Users/alex/.ssh/id_rsa ~/.ssh/id_rsa
+cp /mnt/c/Users/alex/.ssh/id_rsa.pub ~/.ssh/id_rsa.pub
