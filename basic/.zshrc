@@ -98,9 +98,8 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 zstyle ':urlglobber' url-other-schema
 alias wincode="cmd.exe /c code"
-alias planweek="python3 /mnt/c/Users/alex/OneDrive/Sync/espanso/user/scripts/planning.py"
 # configure display to use with X410 server running in Windows
-export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
+# export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}'):0.0
 
 autoload run-help
 
