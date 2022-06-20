@@ -1,10 +1,7 @@
 FROM basic:1
 
-USER root
+USER alex
 
 ENV RUST_VERSION="1.51.0"
 
-# install rust
-RUN cd /tmp && curl -LO "https://static.rust-lang.org/dist/rust-${RUST_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
-  && tar -xvzf "./rust-${RUST_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
-  && chmod +x ./rust-${RUST_VERSION}-x86_64-unknown-linux-gnu/install.sh && ./rust-${RUST_VERSION}-x86_64-unknown-linux-gnu/install.sh
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain $RUST_VERSION
