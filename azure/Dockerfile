@@ -1,7 +1,7 @@
-FROM alexchiri.azurecr.io/k8s:latest
+FROM k8s:1
 
 USER root
-RUN apt-get update && apt-get -y install libffi6 python3-pip
+RUN apt-get update && apt-get -y install libffi7 python3-pip
 
 RUN python3 -m pip install azure-cli
 
