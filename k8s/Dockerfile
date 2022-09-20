@@ -2,7 +2,7 @@ FROM basic:1
 
 USER root
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update && apt-get -y install jq unzip python3 apt-transport-https ca-certificates software-properties-common jid
+RUN apt-get update && apt-get -y install jq unzip python3 apt-transport-https ca-certificates software-properties-common jid fzf
 
 ARG USERNAME=alex
 USER ${USERNAME}
@@ -10,6 +10,7 @@ USER ${USERNAME}
 ENV KUBECTL_VERSION="v1.21.11"
 ENV HELM_VERSION="v3.6.3"
 ENV STERN_VERSION="1.21.0"
+ENV EKSCTL_VERSION="v0.94.0"
 
 USER root
 
@@ -23,6 +24,12 @@ RUN cd /tmp && curl -LO https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar
     && tar -xzvf ./helm-${HELM_VERSION}-linux-amd64.tar.gz \
     && chmod +x ./linux-amd64/helm \
     && mv ./linux-amd64/helm /usr/local/bin/helm
+
+# install eksctl
+RUN cd /tmp && curl -LO https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Linux_amd64.tar.gz \
+    && tar -xzvf ./eksctl_Linux_amd64.tar.gz \
+    && chmod +x ./eksctl \
+    && mv ./eksctl /usr/local/bin/eksctl
 
 # install kubens and kubectx
 RUN git clone https://github.com/ahmetb/kubectx /opt/kubectx
