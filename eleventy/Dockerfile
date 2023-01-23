@@ -2,8 +2,8 @@ FROM basic:1
 
 USER root
 
-ENV NODE_VERSION="12"
-ENV ELEVENTY_VERSION="0.12.1"
+ENV NODE_VERSION="16"
+ENV ELEVENTY_VERSION="1.0.1"
 
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash -
 RUN apt-get update && apt install -y nodejs build-essential
