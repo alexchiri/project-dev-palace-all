@@ -7,10 +7,11 @@ RUN apt-get update && apt-get -y install jq unzip python3 apt-transport-https ca
 ARG USERNAME=alex
 USER ${USERNAME}
 
-ENV KUBECTL_VERSION="v1.21.11"
-ENV HELM_VERSION="v3.6.3"
-ENV STERN_VERSION="1.21.0"
-ENV EKSCTL_VERSION="v0.94.0"
+ENV KUBECTL_VERSION="v1.26.1"
+ENV HELM_VERSION="v3.11.0"
+ENV STERN_VERSION="1.23.0"
+ENV EKSCTL_VERSION="v0.127.0"
+ENV CROSSPLANE_VERSION="v1.10.2"
 
 USER root
 
@@ -45,6 +46,9 @@ RUN cd /tmp && curl -LO https://github.com/stern/stern/releases/download/v${STER
     && tar -xzvf stern_${STERN_VERSION}_linux_amd64.tar.gz \
     && chmod +x ./stern \
     && mv ./stern /usr/local/bin/stern
+
+# install crossplane
+RUN curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | XP_CHANNEL=stable XP_VERSION=${CROSSPLANE_VERSION} sh
 
 USER ${USERNAME}
 
