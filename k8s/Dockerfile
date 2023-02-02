@@ -1,4 +1,4 @@
-FROM basic:1
+FROM golang:1
 
 USER root
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -12,6 +12,7 @@ ENV HELM_VERSION="v3.11.0"
 ENV STERN_VERSION="1.23.0"
 ENV EKSCTL_VERSION="v0.127.0"
 ENV CROSSPLANE_VERSION="v1.10.2"
+ENV KUBEBUILDER_VERSION="v3.9.0"
 
 USER root
 
@@ -47,6 +48,10 @@ RUN cd /tmp && curl -LO https://github.com/stern/stern/releases/download/v${STER
     && chmod +x ./stern \
     && mv ./stern /usr/local/bin/stern
 
+# install kubebuilder
+RUN curl -L -o kubebuilder https://github.com/kubernetes-sigs/kubebuilder/releases/download/${KUBEBUILDER_VERSION}/kubebuilder_linux_amd64 && \
+    chmod +x kubebuilder && mv kubebuilder /usr/local/bin/
+
 # install crossplane
 RUN curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | XP_CHANNEL=stable XP_VERSION=${CROSSPLANE_VERSION} sh
 RUN mv kubectl-crossplane /usr/local/bin
@@ -57,3 +62,6 @@ USER ${USERNAME}
 RUN echo "source <(kubectl completion zsh)" >> ~/.zshrc
 RUN echo "alias k=kubectl" >> ~/.zshrc
 RUN echo "complete -F __start_kubectl k" >> ~/.zshrc
+
+# add kubebuilder autocomplete
+RUN echo "source <(kubebuilder completion zsh)" >> ~/.zshrc
