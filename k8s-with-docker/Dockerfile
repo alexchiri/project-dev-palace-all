@@ -1,4 +1,4 @@
-FROM alexchiri.azurecr.io/docker:1
+FROM docker:1
 
 USER root
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -14,12 +14,11 @@ RUN apt-get update && apt-get -y install jq unzip python3 apt-transport-https ca
 
 USER alex
 
-ENV KUBECTL_VERSION="v1.19.2"
-ENV HELM_VERSION="v3.3.4"
-ENV HELMSMAN_VERSION="3.4.6"
-ENV GO_VERSION="1.15.2"
-ENV GO111MODULE="on"
-ENV KIND_VERSION="v0.9.0"
+ENV KUBECTL_VERSION="v1.26.1"
+ENV HELM_VERSION="v3.11.0"
+ENV STERN_VERSION="1.23.0"
+ENV EKSCTL_VERSION="v0.127.0"
+ENV CROSSPLANE_VERSION="v1.10.2"
 
 USER root
 
@@ -27,17 +26,6 @@ USER root
 COPY start_docker /usr/local/sbin/start_docker
 RUN chmod +x /usr/local/sbin/start_docker
 RUN dos2unix /usr/local/sbin/start_docker
-
-# install go
-RUN cd /tmp && curl -LO "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" \
-  && tar -xvzf "./go${GO_VERSION}.linux-amd64.tar.gz" -C /usr/local \
-  && echo "export PATH=\$PATH:/usr/local/go/bin" >> /home/alex/.zshrc
-
-USER alex
-
-# install kind
-RUN /usr/local/go/bin/go get "sigs.k8s.io/kind@${KIND_VERSION}"
-RUN sed -i 's~PATH:~PATH:/home/alex/go/bin:~g' ~/.zshrc
 
 USER root
 
@@ -52,11 +40,15 @@ RUN cd /tmp && curl -LO https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar
     && chmod +x ./linux-amd64/helm \
     && mv ./linux-amd64/helm /usr/local/bin/helm
 
-# install helmsman
-RUN cd /tmp && curl -LO "https://github.com/Praqma/helmsman/releases/download/v${HELMSMAN_VERSION}/helmsman_${HELMSMAN_VERSION}_linux_amd64.tar.gz" \
-  && tar -xzvf "./helmsman_${HELMSMAN_VERSION}_linux_amd64.tar.gz" \
-  && chmod +x ./helmsman \
-  && mv ./helmsman /usr/local/bin/helmsman
+# install stern
+RUN cd /tmp && curl -LO https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_${STERN_VERSION}_linux_amd64.tar.gz \
+    && tar -xzvf stern_${STERN_VERSION}_linux_amd64.tar.gz \
+    && chmod +x ./stern \
+    && mv ./stern /usr/local/bin/stern
+
+# install crossplane
+RUN curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | XP_CHANNEL=stable XP_VERSION=${CROSSPLANE_VERSION} sh
+RUN mv kubectl-crossplane /usr/local/bin
 
 # install kubens and kubectx
 RUN git clone https://github.com/ahmetb/kubectx /opt/kubectx
@@ -68,9 +60,6 @@ RUN ln -s /opt/kubectx/completion/kubectx.zsh /home/alex/.oh-my-zsh/completions/
 RUN ln -s /opt/kubectx/completion/kubens.zsh /home/alex/.oh-my-zsh/completions/_kubens.zsh
 
 USER alex
-
-# install helmdiff - look at this afterwards, for some reason now it fails with line encoding issues
-RUN helm plugin install https://github.com/databus23/helm-diff --version master
 
 # add kubectl autocomplete with alias
 RUN echo "source <(kubectl completion zsh)" >> ~/.zshrc

@@ -49,6 +49,7 @@ RUN cd /tmp && curl -LO https://github.com/stern/stern/releases/download/v${STER
 
 # install crossplane
 RUN curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | XP_CHANNEL=stable XP_VERSION=${CROSSPLANE_VERSION} sh
+RUN mv kubectl-crossplane /usr/local/bin
 
 USER ${USERNAME}
 
