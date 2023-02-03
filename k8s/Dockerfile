@@ -2,7 +2,7 @@ FROM golang:1
 
 USER root
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update && apt-get -y install jq unzip python3 apt-transport-https ca-certificates software-properties-common jid fzf
+RUN apt-get update && apt-get -y install jq unzip python3 apt-transport-https ca-certificates software-properties-common jid fzf make gcc
 
 ARG USERNAME=alex
 USER ${USERNAME}
