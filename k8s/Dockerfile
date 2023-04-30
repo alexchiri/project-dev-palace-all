@@ -10,9 +10,7 @@ USER ${USERNAME}
 ENV KUBECTL_VERSION="v1.26.1"
 ENV HELM_VERSION="v3.11.0"
 ENV STERN_VERSION="1.23.0"
-ENV EKSCTL_VERSION="v0.127.0"
-ENV CROSSPLANE_VERSION="v1.10.2"
-ENV KUBEBUILDER_VERSION="v3.9.0"
+ENV GCLOUDCLI_VERSION="421.0.0"
 
 USER root
 
@@ -27,20 +25,14 @@ RUN cd /tmp && curl -LO https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar
     && chmod +x ./linux-amd64/helm \
     && mv ./linux-amd64/helm /usr/local/bin/helm
 
-# install eksctl
-RUN cd /tmp && curl -LO https://github.com/weaveworks/eksctl/releases/download/${EKSCTL_VERSION}/eksctl_Linux_amd64.tar.gz \
-    && tar -xzvf ./eksctl_Linux_amd64.tar.gz \
-    && chmod +x ./eksctl \
-    && mv ./eksctl /usr/local/bin/eksctl
-
 # install kubens and kubectx
 RUN git clone https://github.com/ahmetb/kubectx /opt/kubectx
 RUN ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx
 RUN ln -s /opt/kubectx/kubens /usr/local/bin/kubens
 RUN mkdir -p /home/${USERNAME}/.oh-my-zsh/completions
 RUN chmod -R 755 /home/${USERNAME}/.oh-my-zsh/completions
-RUN ln -s /opt/kubectx/completion/kubectx.zsh /home/${USERNAME}/.oh-my-zsh/completions/_kubectx.zsh
-RUN ln -s /opt/kubectx/completion/kubens.zsh /home/${USERNAME}/.oh-my-zsh/completions/_kubens.zsh
+RUN ln -s /opt/kubectx/completion/_kubectx.zsh /home/${USERNAME}/.oh-my-zsh/completions/_kubectx.zsh
+RUN ln -s /opt/kubectx/completion/_kubens.zsh /home/${USERNAME}/.oh-my-zsh/completions/_kubens.zsh
 
 # install stern
 RUN cd /tmp && curl -LO https://github.com/stern/stern/releases/download/v${STERN_VERSION}/stern_${STERN_VERSION}_linux_amd64.tar.gz \
@@ -48,20 +40,16 @@ RUN cd /tmp && curl -LO https://github.com/stern/stern/releases/download/v${STER
     && chmod +x ./stern \
     && mv ./stern /usr/local/bin/stern
 
-# install kubebuilder
-RUN curl -L -o kubebuilder https://github.com/kubernetes-sigs/kubebuilder/releases/download/${KUBEBUILDER_VERSION}/kubebuilder_linux_amd64 && \
-    chmod +x kubebuilder && mv kubebuilder /usr/local/bin/
-
-# install crossplane
-RUN curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | XP_CHANNEL=stable XP_VERSION=${CROSSPLANE_VERSION} sh
-RUN mv kubectl-crossplane /usr/local/bin
-
 USER ${USERNAME}
+
+# install gcloud CLI
+RUN cd /home/alex && curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-${GCLOUDCLI_VERSION}-linux-x86_64.tar.gz \
+    && tar -xzvf ./google-cloud-cli-${GCLOUDCLI_VERSION}-linux-x86_64.tar.gz \
+    && echo "export PATH=\$PATH:/home/alex/google-cloud-sdk/bin" >> /home/alex/.zshrc \
+    && echo "export USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> /home/alex/.zshrc \
+    && ./google-cloud-sdk/bin/gcloud components install gke-gcloud-auth-plugin
 
 # add kubectl autocomplete with alias
 RUN echo "source <(kubectl completion zsh)" >> ~/.zshrc
 RUN echo "alias k=kubectl" >> ~/.zshrc
 RUN echo "complete -F __start_kubectl k" >> ~/.zshrc
-
-# add kubebuilder autocomplete
-RUN echo "source <(kubebuilder completion zsh)" >> ~/.zshrc

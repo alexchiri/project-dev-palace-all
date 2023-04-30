@@ -1,8 +1,8 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get update && apt-get -y install zsh curl git sudo locales vim dos2unix wget \
-    iputils-ping iproute2 jq
+    iputils-ping iproute2 jq apt-transport-https
 
 # disable annoying warning introduced in sudo: https://github.com/sudo-project/sudo/issues/42
 RUN echo "Set disable_coredump false" >> /etc/sudo.conf
