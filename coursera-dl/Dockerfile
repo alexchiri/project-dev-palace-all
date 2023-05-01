@@ -6,4 +6,4 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 
 RUN apt-get update && apt-get -y install python3.9 python3-pip
 
-RUN python3 -m pip install coursera-dl==0.11.5
+RUN python3 -m pip install "courser-dl@git+https://github.com/raffaem/coursera-dl.git"
