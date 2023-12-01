@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu:22.04
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get update && apt-get -y install zsh curl git sudo locales vim dos2unix wget \
@@ -44,13 +44,6 @@ USER root
 COPY .zshrc /home/${USERNAME}/.zshrc
 RUN chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc
 RUN usermod --shell /usr/bin/zsh ${USERNAME}
-
-ENV GITHUB_CLI="2.8.0"
-# install GitHub CLI
-RUN cd /tmp && curl -LO https://github.com/cli/cli/releases/download/v${GITHUB_CLI}/gh_${GITHUB_CLI}_linux_amd64.tar.gz \
-    && tar -xzvf ./gh_${GITHUB_CLI}_linux_amd64.tar.gz \
-    && chmod +x ./gh_${GITHUB_CLI}_linux_amd64/bin/gh \
-    && mv ./gh_${GITHUB_CLI}_linux_amd64/bin/gh /usr/local/bin/gh
 
 # copy vim config
 COPY .vimrc /home/${USERNAME}/.vimrc
