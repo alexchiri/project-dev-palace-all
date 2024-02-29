@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM ubuntu:22.04
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get update && apt-get -y install zsh curl git sudo locales vim dos2unix wget \
@@ -43,6 +43,7 @@ USER root
 # copy zsh config
 COPY .zshrc /home/${USERNAME}/.zshrc
 RUN chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc
+RUN dos2unix /home/${USERNAME}/.zshrc
 RUN usermod --shell /usr/bin/zsh ${USERNAME}
 
 # copy vim config

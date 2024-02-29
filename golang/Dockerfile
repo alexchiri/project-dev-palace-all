@@ -1,8 +1,8 @@
-FROM --platform=linux/amd64 basic:1
+FROM basic:1
 
 USER alex
 
-ENV GO_VERSION="1.17.13"
+ENV GO_VERSION="1.22.0"
 ENV GO111MODULE="on"
 
 USER root

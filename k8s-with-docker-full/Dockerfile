@@ -1,34 +1,47 @@
-FROM docker:1
+FROM ubuntu:22.04
 
-USER root
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update && apt-get -y install jq unzip python3 apt-transport-https \
-    ca-certificates software-properties-common jid conntrack
+RUN apt-get update && apt-get -y install zsh curl git sudo locales vim dos2unix wget \
+    iputils-ping iproute2 jq apt-transport-https \
+    jid ca-certificates gnupg-agent software-properties-common \
+    unzip python3 conntrack    
 
-# fix for issue with running kind in WSL2 and with Docker CE, but this cannot be run here, because these exist at this point.
-# need to look further into this, for now I am just running these manually every time I get the issue with kind - should probably make a script
-# https://github.com/microsoft/WSL/issues/4189
-# https://github.com/docker/for-linux/issues/219
-# Also, there is another way to do this here, but it doesn't really work: https://kind.sigs.k8s.io/docs/user/using-wsl2/#cannot-find-cgroup-mount-destination-unknown
-#RUN mkdir /sys/fs/cgroup/systemd
-#RUN mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+# create user and set password
+ARG USERNAME=ubuntu
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
 
-USER alex
+RUN groupadd --gid ${USER_GID} ${USERNAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
 
+COPY wsl.conf /etc/wsl.conf
+
+# generate locale so the agnoster zsh theme works
+RUN locale-gen en_US.UTF-8
+
+# install Docker
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+RUN apt-key fingerprint 0EBFCD88
+RUN add-apt-repository \
+       "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+       $(lsb_release -cs) \
+       stable"
+
+RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io
+
+RUN usermod -aG docker ${USERNAME}
+RUN newgrp docker
+
+# K8s specific tools
 ENV KUBECTL_VERSION="v1.28.7"
 ENV HELM_VERSION="v3.14.2"
 ENV STERN_VERSION="1.28.0"
 ENV MINIKUBE_VERSION="v1.32.0"
 ENV ARGOCDCLI_VERSION="v2.10.1"
-
-# USER root
-
-# include script to bring to fix docker issue (and make sure it has linux style line endings)
-# COPY start_docker /usr/local/sbin/start_docker
-# RUN chmod +x /usr/local/sbin/start_docker
-# RUN dos2unix /usr/local/sbin/start_docker
-
-USER root
 
 # install kubectl
 RUN cd /tmp && curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl \
@@ -66,7 +79,28 @@ RUN cd /tmp && \
     curl -LO https://github.com/argoproj/argo-cd/releases/download/v2.10.1/argocd-linux-amd64 && \
     install argocd-linux-amd64 /usr/local/bin/minikube
 
-USER alex
+USER ${USERNAME}
+
+# install oh-my-zsh
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+# configure git
+# ARG GIT_EMAIL
+# ARG GIT_NAME
+# RUN git config --global user.email ${GIT_EMAIL}
+# RUN git config --global user.name ${GIT_NAME}
+# RUN git config --global core.autocrlf false
+
+# change the shade of blue in the theme
+RUN sed -i '0,/blue/{s/blue/39d/}' /home/${USERNAME}/.oh-my-zsh/themes/agnoster.zsh-theme
+
+USER root
+
+# copy zsh config
+COPY .zshrc /home/${USERNAME}/.zshrc
+RUN chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc
+RUN dos2unix /home/${USERNAME}/.zshrc
+RUN usermod --shell /usr/bin/zsh ${USERNAME}
 
 # add kubectl autocomplete with alias
 RUN echo "source <(kubectl completion zsh)" >> ~/.zshrc
