@@ -77,7 +77,7 @@ RUN ln -s /opt/kubectx/completion/_kubens.zsh /home/alex/.oh-my-zsh/completions/
 # install argocd
 RUN cd /tmp && \
     curl -LO https://github.com/argoproj/argo-cd/releases/download/v2.10.1/argocd-linux-amd64 && \
-    install argocd-linux-amd64 /usr/local/bin/minikube
+    install argocd-linux-amd64 /usr/local/bin/argocd
 
 USER ${USERNAME}
 
